@@ -32,6 +32,7 @@ globals:
     ARRAY:
         type: float
 
+#    MIG: ~
     MIG:
         path: param/mig.csv
         type: float

@@ -1,13 +1,16 @@
 entities:
     person:
         fields:
+#            - imported_field1: ~
             - imported_field2: {type: int, initialdata: False}
 
         macros:
+#            IMPORTED_MACRO: ~
             IMPORTED_MACRO: imported_field2 == 2
             ISCHILD: age < 16
 
         processes:
+#            compute_agegroup(): ~
             compute_agegroup():
                 - agegroup: trunc(age / 20)
 

@@ -254,6 +254,9 @@ class Simulation(object):
         content = yaml.safe_load(yaml_str)
         expand_periodic_fields(content)
         content = handle_imports(content, simulation_dir)
+        # filter None globals, if any
+        if 'globals' in content:
+            content['globals'] = {k: v for k, v in content['globals'].items() if v is not None}
         validate_dict(content, cls.yaml_layout)
 
         # the goal is to get something like:
@@ -376,7 +379,7 @@ class Simulation(object):
             entity.attach_and_resolve_links(entities)
 
         global_parse_context = {'__globals__': global_symbols(globals_def),
-                          '__entities__': entities}
+                                '__entities__': entities}
         parsing_context = global_parse_context.copy()
         parsing_context.update((entity.name, entity.all_symbols(global_parse_context))
                                for entity in entities.values())

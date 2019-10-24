@@ -123,6 +123,7 @@ class Field(object):
                 raise Exception('invalid field definition')
             dtype = field_str_to_type(strtype, "field '%s'" % name)
         else:
+            # it is a type object itself
             assert isinstance(fielddef, type)
             dtype = normalize_type(fielddef)
         return cls(name, dtype, input=initialdata, output=output, default_value=default_value)
@@ -189,7 +190,8 @@ class Entity(object):
 
         if not isinstance(fields, FieldCollection):
             fields = FieldCollection(Field.from_def(name, fdef)
-                                     for name, fdef in fields)
+                                     for name, fdef in fields
+                                     if fdef is not None)
 
         duplicate_names = [name
                            for name, num
@@ -380,8 +382,9 @@ class Entity(object):
         local_parse_context = global_parse_context.copy()
         local_parse_context[self.name] = symbols
         local_parse_context['__entity__'] = self.name
+        # None macros are ignored so that an importing simulation can delete an imported macro
         macros = dict((k, parse(v, local_parse_context))
-                      for k, v in self.macro_strings.items())
+                      for k, v in self.macro_strings.items() if v is not None)
         symbols.update(macros)
         symbols['other'] = PrefixingLink(self, macros, self.links, '__other_')
         symbols.update(self.method_symbols)
@@ -576,8 +579,9 @@ Please use this instead:
 
     def parse_processes(self, context):
         # TODO: when defining a process outside of a function is no longer allowed, simplify this code
+        # ignore None process strings so that an importing simulation can delete an imported process
         functions = [(k, self.parse_function(k, v, context))
-                     for k, v in self.process_strings.items()]
+                     for k, v in self.process_strings.items() if v is not None]
         self.processes = {v.name if isinstance(v, Function) else k: v
                           for k, v in functions}
         # self.ssa()
